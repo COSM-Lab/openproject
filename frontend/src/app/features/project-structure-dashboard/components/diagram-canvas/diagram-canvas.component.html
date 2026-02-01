@@ -4,6 +4,9 @@
   (mouseup)="onMouseUp()"
   (mouseleave)="onMouseUp()"
 >
+  <div *ngIf="blocks.length === 0" class="psd-empty-message">
+    <p>No blocks in diagram. Add blocks using the editor on the left.</p>
+  </div>
   <div
     class="psd-canvas__block"
     *ngFor="let block of blocks"
@@ -24,6 +27,9 @@
       <span>Other: {{ counts[block.id].other }}</span>
       <span>Total: {{ counts[block.id].total }}</span>
       <a class="psd-link" [href]="counts[block.id].drill_down_url" target="_blank">Open</a>
+    </div>
+    <div class="psd-canvas__no-counts" *ngIf="!counts[block.id]">
+      <span class="psd-hint">No data. Click "Aggregate" after configuring query_id.</span>
     </div>
     <div class="psd-canvas__resize" (mousedown)="onResizeDown($event, block)"></div>
   </div>

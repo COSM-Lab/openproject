@@ -24,13 +24,26 @@
     (ngModelChange)="node.y = $event ? +$event : node.y; nodeChange.emit(node)"
     placeholder="y"
   />
+  <select
+    class="psd-select psd-input--query"
+    [disabled]="readonly"
+    [ngModel]="config[node.id]?.query_id"
+    (ngModelChange)="onQueryIdChange($event)"
+  >
+    <option [value]="''">-- Select query --</option>
+    <option *ngFor="let query of availableQueries" [value]="query.id">
+      {{ query.name || 'Query #' + query.id }}
+    </option>
+  </select>
   <input
+    *ngIf="availableQueries.length === 0 && !loadingQueries"
     type="number"
     class="psd-input psd-input--query"
     [readonly]="readonly"
     [ngModel]="config[node.id]?.query_id"
     (ngModelChange)="onQueryIdChange($event)"
-    placeholder="query_id"
+    placeholder="query_id (manual)"
+    title="Enter query ID manually. To get it: 1) Go to Work packages, 2) Save a query, 3) Check URL for query_id=XXX"
   />
   <button class="psd-btn" type="button" (click)="onAddChild()" [disabled]="readonly">+ child</button>
   <button class="psd-btn psd-btn--danger" type="button" (click)="onRemove()" [disabled]="readonly">×</button>
@@ -41,6 +54,8 @@
       *ngFor="let child of node.children"
       [node]="child"
       [config]="config"
+      [projectId]="projectId"
+      [projectIdentifier]="projectIdentifier"
       (nodeChange)="nodeChange.emit(node)"
       (configChange)="configChange.emit($event)"
       (addChild)="addChild.emit($event)"

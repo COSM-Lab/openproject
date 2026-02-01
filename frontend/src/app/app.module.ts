@@ -53,6 +53,8 @@ import {
   OpenprojectWorkPackageGraphsModule,
 } from 'core-app/shared/components/work-package-graphs/openproject-work-package-graphs.module';
 import { OpenprojectMyPageModule } from 'core-app/features/my-page/openproject-my-page.module';
+import { OpenprojectProjectStructureDashboardModule } from 'core-app/features/project-structure-dashboard/openproject-project-structure-dashboard.module';
+import { DashboardPageComponent } from 'core-app/features/project-structure-dashboard/containers/dashboard-page/dashboard-page.component';
 import { KeyboardShortcutService } from 'core-app/shared/directives/a11y/keyboard-shortcut.service';
 import { CopyToClipboardService } from 'core-app/shared/components/copy-to-clipboard/copy-to-clipboard.service';
 import {
@@ -301,6 +303,9 @@ export function runBootstrap(appRef:ApplicationRef) {
     // MyPage
     OpenprojectMyPageModule,
 
+    // Project Structure Dashboard
+    OpenprojectProjectStructureDashboardModule,
+
     // Global Search
     OpenprojectGlobalSearchModule,
 
@@ -417,5 +422,6 @@ export class OpenProjectModule implements DoBootstrap {
 
     registerCustomElement('opce-my-page', MyPageComponent, { injector });
     registerCustomElement('opce-dashboard', DashboardComponent, { injector });
+    registerCustomElement('op-psd-dashboard-page', DashboardPageComponent, { injector });
   }
 }

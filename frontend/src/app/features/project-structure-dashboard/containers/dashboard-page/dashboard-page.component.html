@@ -1,4 +1,4 @@
-<div class="psd-page" *ngIf="selectedDashboard$ | async as dashboard">
+<div class="psd-page" *ngIf="selectedDashboard$ | async as dashboard; else noDashboard">
   <header class="psd-page__header">
     <h2>Project Structure Dashboard</h2>
     <div class="psd-page__actions">
@@ -11,12 +11,15 @@
     </div>
   </header>
 
-  <section class="psd-grid">
+  <section class="psd-grid" *ngIf="dashboard.structure_data?.root">
     <div class="psd-editor">
       <h3>Editor</h3>
       <op-psd-block-tree
+        *ngIf="dashboard.structure_data?.root"
         [node]="dashboard.structure_data.root"
-        [config]="dashboard.block_configurations"
+        [config]="dashboard.block_configurations || {}"
+        [projectId]="projectId"
+        [projectIdentifier]="projectIdentifier"
         (nodeChange)="onNodeChange($event)"
         (configChange)="onConfigChange($event)"
         (addChild)="onAddChild($event)"
@@ -25,19 +28,28 @@
     </div>
     <div class="psd-viewer">
       <h3>Counts</h3>
-      <div *ngFor="let entry of (counts$ | async) | keyvalue" class="psd-count-card">
-        <div class="psd-count-card__title">{{ entry.key }}</div>
-        <div class="psd-count-card__counts">
-          <span>Done: {{ entry.value.completed }}</span>
-          <span>In progress: {{ entry.value.in_progress }}</span>
-          <span>Pending: {{ entry.value.pending }}</span>
-          <span>Other: {{ entry.value.other }}</span>
-          <span>Total: {{ entry.value.total }}</span>
+      <div *ngIf="(counts$ | async) && ((counts$ | async) | keyvalue).length > 0; else noCounts">
+        <div *ngFor="let entry of (counts$ | async) | keyvalue" class="psd-count-card">
+          <div class="psd-count-card__title">{{ entry.key }}</div>
+          <div class="psd-count-card__counts">
+            <span>Done: {{ entry.value.completed }}</span>
+            <span>In progress: {{ entry.value.in_progress }}</span>
+            <span>Pending: {{ entry.value.pending }}</span>
+            <span>Other: {{ entry.value.other }}</span>
+            <span>Total: {{ entry.value.total }}</span>
+          </div>
+          <a class="psd-link" [href]="entry.value.drill_down_url" target="_blank">Open list</a>
         </div>
-        <a class="psd-link" [href]="entry.value.drill_down_url" target="_blank">Open list</a>
       </div>
+      <ng-template #noCounts>
+        <div class="psd-empty-message">
+          <p>No counts available. Click "Aggregate" to calculate task counts for blocks with configured queries.</p>
+          <p class="psd-hint">Hint: Configure query_id for blocks in the editor, then click "Aggregate".</p>
+        </div>
+      </ng-template>
       <h3>Diagram</h3>
       <op-psd-diagram-canvas
+        *ngIf="dashboard.structure_data?.root"
         [root]="dashboard.structure_data.root"
         [counts]="(counts$ | async) ?? {}"
         (positionChange)="onPositionChange($event)"
@@ -46,7 +58,12 @@
   </section>
 </div>
 
-<div class="psd-empty" *ngIf="!(selectedDashboard$ | async)">
-  <p>No dashboards yet.</p>
-  <button class="psd-btn" type="button" (click)="addDashboard()">Create one</button>
-</div>
+<ng-template #noDashboard>
+  <div class="psd-empty">
+    <h2>Project Structure Dashboard</h2>
+    <p>Component loaded! Project ID: {{ projectId || 'not detected' }}</p>
+    <p *ngIf="loading$ | async">Loading dashboards...</p>
+    <p *ngIf="!(loading$ | async) && !projectId">Waiting for project detection...</p>
+    <button class="psd-btn" type="button" (click)="addDashboard()">Create dashboard</button>
+  </div>
+</ng-template>

@@ -1,9 +1,12 @@
 export interface PSDDashboard {
   id?:number;
   name:string;
-  project_id:number;
-  structure_data:PSDStructureData;
-  block_configurations:Record<string, PSDBlockConfig>;
+  projectId?:number; // camelCase from API
+  project_id?:number; // snake_case fallback
+  structureData?:PSDStructureData; // camelCase from API
+  structure_data?:PSDStructureData; // snake_case fallback
+  blockConfigurations?:Record<string, PSDBlockConfig>; // camelCase from API
+  block_configurations?:Record<string, PSDBlockConfig>; // snake_case fallback
 }
 
 export interface PSDStructureData {
