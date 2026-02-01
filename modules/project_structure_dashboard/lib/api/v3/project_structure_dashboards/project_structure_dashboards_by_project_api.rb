@@ -12,34 +12,52 @@ module API
           end
 
           def find_dashboard!
-            dashboards_scope.find(params[:dashboard_id])
+            dashboard = dashboards_scope.find_by(id: params[:dashboard_id])
+            raise ActiveRecord::RecordNotFound, "Dashboard not found" unless dashboard
+
+            dashboard
           end
 
           def authorize_view!
-            authorize(:view_project_structure_dashboard, project: @project)
+            authorize_in_project(:view_project_structure_dashboard, project: @project)
           end
 
           def authorize_manage!
-            authorize(:manage_project_structure_dashboard, project: @project)
+            authorize_in_project(:manage_project_structure_dashboard, project: @project)
+          end
+
+          def normalize_params(params)
+            # Convert camelCase keys to snake_case
+            normalized = {}
+            params.each do |key, value|
+              snake_key = key.to_s.underscore.to_sym
+              normalized[snake_key] = value
+            end
+            normalized
           end
 
           def validate_payload!(payload)
-            %w[name structure_data block_configurations].each do |key|
-              raise ::API::Errors::InvalidRequestBody, "#{key} is required" unless payload.key?(key)
-            end
+            # After normalize_params, all keys should be snake_case symbols
+            raise ::API::Errors::InvalidRequestBody, "name is required" unless payload[:name] || payload["name"]
+            raise ::API::Errors::InvalidRequestBody, "structure_data is required" unless payload[:structure_data] || payload["structure_data"]
 
-            unless payload["structure_data"].is_a?(Hash)
+            structure_data = payload[:structure_data] || payload["structure_data"]
+            unless structure_data.is_a?(Hash)
               raise ::API::Errors::InvalidRequestBody, "structure_data must be an object"
             end
 
-            unless payload["block_configurations"].is_a?(Hash)
+            # block_configurations is optional, but if provided must be a Hash
+            block_config = payload[:block_configurations] || payload["block_configurations"]
+            if block_config && !block_config.is_a?(Hash)
               raise ::API::Errors::InvalidRequestBody, "block_configurations must be an object"
             end
           end
         end
 
         resources :project_structure_dashboards do
-          before { authorize_view! }
+          after_validation do
+            authorize_view!
+          end
 
           get do
             dashboards = dashboards_scope
@@ -55,15 +73,35 @@ module API
           end
           post do
             authorize_manage!
-            attrs = declared_params[:dashboard]
+            attrs = normalize_params(declared_params[:dashboard] || {})
             validate_payload!(attrs)
 
+            attrs[:project_id] = @project.id
+            attrs[:block_configurations] ||= {}
+            attrs[:structure_data] = attrs[:structure_data].deep_stringify_keys if attrs[:structure_data].is_a?(Hash)
+            attrs[:block_configurations] = attrs[:block_configurations].deep_stringify_keys if attrs[:block_configurations].is_a?(Hash)
+
             dashboard = dashboards_scope.new(attrs)
-            if dashboard.save
-              status 201
-              ProjectStructureDashboard::ProjectStructureDashboardRepresenter.new(dashboard, current_user:)
-            else
-              raise ::API::Errors::Validation.new(dashboard)
+            dashboard.send(:attribute_will_change!, 'block_configurations') if dashboard.respond_to?(:attribute_will_change!)
+
+            begin
+              unless dashboard.valid?
+                raise ::API::Errors::ErrorBase.create_and_merge_errors(dashboard.errors)
+              end
+
+              if dashboard.save
+                status 201
+                ProjectStructureDashboard::ProjectStructureDashboardRepresenter.new(dashboard, current_user:)
+              else
+                raise ::API::Errors::ErrorBase.create_and_merge_errors(dashboard.errors)
+              end
+            rescue ActiveRecord::RecordNotUnique => e
+              if e.message.include?("index_project_structure_dashboards_on_project_id_and_name")
+                dashboard.errors.add(:name, :taken, value: attrs[:name])
+                raise ::API::Errors::ErrorBase.create_and_merge_errors(dashboard.errors)
+              else
+                raise
+              end
             end
           end
 
@@ -79,13 +117,19 @@ module API
             end
             patch do
               authorize_manage!
-              attrs = declared_params[:dashboard]
+              attrs = declared_params[:dashboard] || {}
+              # Normalize camelCase to snake_case
+              attrs = normalize_params(attrs)
               validate_payload!(attrs)
+
+              attrs[:project_id] = @project.id
+              attrs[:structure_data] = attrs[:structure_data].deep_stringify_keys if attrs[:structure_data].is_a?(Hash)
+              attrs[:block_configurations] = attrs[:block_configurations].deep_stringify_keys if attrs[:block_configurations].is_a?(Hash)
 
               if @dashboard.update(attrs)
                 ProjectStructureDashboard::ProjectStructureDashboardRepresenter.new(@dashboard, current_user:)
               else
-                raise ::API::Errors::Validation.new(@dashboard)
+                raise ::API::Errors::ErrorBase.create_and_merge_errors(@dashboard.errors)
               end
             end
 

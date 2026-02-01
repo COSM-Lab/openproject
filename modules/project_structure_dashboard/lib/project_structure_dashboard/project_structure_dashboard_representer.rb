@@ -2,9 +2,7 @@
 
 module ProjectStructureDashboard
   class ProjectStructureDashboardRepresenter < ::API::Decorators::Single
-    self_link title_getter: ->(*) { represented.name } do
-      api_v3_paths.project_project_structure_dashboard(represented.project_id, represented.id)
-    end
+    self_link title_getter: ->(*) { represented.name }
 
     property :id
     property :name
@@ -19,6 +17,14 @@ module ProjectStructureDashboard
         href: api_v3_paths.aggregate_project_project_structure_dashboard(represented.project_id, represented.id),
         title: "Aggregate block statuses"
       }
+    end
+
+    def _type
+      "ProjectStructureDashboard"
+    end
+
+    def self_v3_path(_path, _id_attribute)
+      api_v3_paths.project_project_structure_dashboard(represented.project_id, represented.id)
     end
   end
 end

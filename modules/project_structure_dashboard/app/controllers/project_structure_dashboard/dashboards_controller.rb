@@ -6,9 +6,11 @@ module ProjectStructureDashboard
 
     before_action :require_login
     before_action :find_project
+
+    authorize_with_permission :view_project_structure_dashboard, only: %i[index show aggregate page]
+    authorize_with_permission :manage_project_structure_dashboard, only: %i[create update destroy]
+
     before_action :find_dashboard, only: %i[show update destroy aggregate]
-    before_action :authorize_view!, only: %i[index show aggregate page]
-    before_action :authorize_manage!, only: %i[create update destroy]
 
     def aggregate
       service = ProjectStructureDashboard::StatusAggregationService.new(
@@ -59,7 +61,7 @@ module ProjectStructureDashboard
     end
 
     def page
-      render layout: "angular/angular"
+      render layout: "angular/angular", locals: { component: "op-psd-dashboard-page" }
     end
 
     private
@@ -74,14 +76,6 @@ module ProjectStructureDashboard
 
     def find_dashboard
       @dashboard = ProjectStructureDashboard::Dashboard.find_by!(project: @project, id: params[:id])
-    end
-
-    def authorize_view!
-      authorize(:view_project_structure_dashboard, project: @project)
-    end
-
-    def authorize_manage!
-      authorize(:manage_project_structure_dashboard, project: @project)
     end
   end
 end

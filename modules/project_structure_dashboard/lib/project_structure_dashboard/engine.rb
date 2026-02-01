@@ -53,9 +53,9 @@ module ProjectStructureDashboard
       ::Redmine::MenuManager.map(:project_menu) do |menu|
         menu.push(
           :project_structure_dashboard,
-          ->(project) { "/projects/#{project.identifier}/structure-dashboard" },
+          { controller: "/project_structure_dashboard/dashboards", action: "page" },
           caption: I18n.t("project_structure_dashboard.label_menu", default: "Structure dashboard"),
-          icon: "th-large",
+          icon: "table",
           if: lambda { |project|
             user = User.current
             return false unless user.logged?
@@ -68,15 +68,29 @@ module ProjectStructureDashboard
       end
     end
 
+    # Load locale files
+    initializer "project_structure_dashboard.i18n" do |app|
+      app.config.i18n.load_path += Dir[config.root.join("config", "locales", "*.{rb,yml}").to_s]
+    end
+
+    # Apply path helper patch - must be in to_prepare to work with code reloading
+    config.to_prepare do
+      require_relative "path_helper_patch"
+      # Apply patch to singleton class
+      API::V3::Utilities::PathHelper::ApiV3Path.singleton_class.include(ProjectStructureDashboard::PathHelperPatch)
+    end
+
+    # Ignore API directory from Zeitwerk autoloading - we load it explicitly
+    config.autoload_paths -= [File.join(root, "lib/api")]
+    config.eager_load_paths -= [File.join(root, "lib/api")]
+
     config.to_prepare do
       require_relative "project_structure_dashboard_representer"
       require_relative "project_structure_dashboard_collection_representer"
       require_relative "aggregation_representer"
-      require_relative "path_helper_patch"
       # Load API file - it will be available when ProjectsAPI tries to mount it
       require_dependency "api/open_project_api"
       require_dependency Rails.root.join("modules/project_structure_dashboard/lib/api/v3/project_structure_dashboards/project_structure_dashboards_by_project_api").to_s
-      API::V3::Utilities::PathHelper::ApiV3Path.include(ProjectStructureDashboard::PathHelperPatch)
     end
   end
 end
