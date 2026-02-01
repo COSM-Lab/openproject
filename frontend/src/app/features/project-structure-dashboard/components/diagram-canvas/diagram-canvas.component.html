@@ -1,0 +1,30 @@
+<div
+  class="psd-canvas"
+  (mousemove)="onMouseMove($event)"
+  (mouseup)="onMouseUp()"
+  (mouseleave)="onMouseUp()"
+>
+  <div
+    class="psd-canvas__block"
+    *ngFor="let block of blocks"
+    [style.left.px]="block.x || 20 * block.depth"
+    [style.top.px]="block.y || 20 * block.depth"
+    [style.width.px]="block.width || 180"
+    [style.height.px]="block.height || 120"
+    (mousedown)="onMouseDown($event, block)"
+  >
+    <div class="psd-canvas__title">
+      <span>{{ block.title }}</span>
+      <span class="psd-canvas__depth">Lvl {{ block.depth }}</span>
+    </div>
+    <div class="psd-canvas__counts" *ngIf="counts[block.id]">
+      <span>Done: {{ counts[block.id].completed }}</span>
+      <span>In progress: {{ counts[block.id].in_progress }}</span>
+      <span>Pending: {{ counts[block.id].pending }}</span>
+      <span>Other: {{ counts[block.id].other }}</span>
+      <span>Total: {{ counts[block.id].total }}</span>
+      <a class="psd-link" [href]="counts[block.id].drill_down_url" target="_blank">Open</a>
+    </div>
+    <div class="psd-canvas__resize" (mousedown)="onResizeDown($event, block)"></div>
+  </div>
+</div>

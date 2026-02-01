@@ -1,0 +1,52 @@
+<div class="psd-page" *ngIf="selectedDashboard$ | async as dashboard">
+  <header class="psd-page__header">
+    <h2>Project Structure Dashboard</h2>
+    <div class="psd-page__actions">
+      <button class="psd-btn" type="button" (click)="addDashboard()">Add dashboard</button>
+      <select class="psd-select" [ngModel]="dashboard.id" (ngModelChange)="selectDashboard($event)">
+        <option *ngFor="let d of dashboards$ | async" [ngValue]="d.id">{{ d.name }}</option>
+      </select>
+      <button class="psd-btn" type="button" (click)="saveDashboard()">Save</button>
+      <button class="psd-btn" type="button" (click)="aggregate()">Aggregate</button>
+    </div>
+  </header>
+
+  <section class="psd-grid">
+    <div class="psd-editor">
+      <h3>Editor</h3>
+      <op-psd-block-tree
+        [node]="dashboard.structure_data.root"
+        [config]="dashboard.block_configurations"
+        (nodeChange)="onNodeChange($event)"
+        (configChange)="onConfigChange($event)"
+        (addChild)="onAddChild($event)"
+        (remove)="onRemove($event)"
+      ></op-psd-block-tree>
+    </div>
+    <div class="psd-viewer">
+      <h3>Counts</h3>
+      <div *ngFor="let entry of (counts$ | async) | keyvalue" class="psd-count-card">
+        <div class="psd-count-card__title">{{ entry.key }}</div>
+        <div class="psd-count-card__counts">
+          <span>Done: {{ entry.value.completed }}</span>
+          <span>In progress: {{ entry.value.in_progress }}</span>
+          <span>Pending: {{ entry.value.pending }}</span>
+          <span>Other: {{ entry.value.other }}</span>
+          <span>Total: {{ entry.value.total }}</span>
+        </div>
+        <a class="psd-link" [href]="entry.value.drill_down_url" target="_blank">Open list</a>
+      </div>
+      <h3>Diagram</h3>
+      <op-psd-diagram-canvas
+        [root]="dashboard.structure_data.root"
+        [counts]="(counts$ | async) ?? {}"
+        (positionChange)="onPositionChange($event)"
+      ></op-psd-diagram-canvas>
+    </div>
+  </section>
+</div>
+
+<div class="psd-empty" *ngIf="!(selectedDashboard$ | async)">
+  <p>No dashboards yet.</p>
+  <button class="psd-btn" type="button" (click)="addDashboard()">Create one</button>
+</div>

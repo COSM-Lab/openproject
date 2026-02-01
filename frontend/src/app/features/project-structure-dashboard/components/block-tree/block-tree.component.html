@@ -1,0 +1,51 @@
+<div class="psd-block">
+  <div class="psd-block__header">
+    <input
+      type="text"
+    class="psd-input"
+    [readonly]="readonly"
+    [ngModel]="node.title"
+    (ngModelChange)="node.title = $event; nodeChange.emit(node)"
+    placeholder="Block title"
+  />
+  <input
+    type="number"
+    class="psd-input psd-input--coord"
+    [readonly]="readonly"
+    [ngModel]="node.x"
+    (ngModelChange)="node.x = $event ? +$event : node.x; nodeChange.emit(node)"
+    placeholder="x"
+  />
+  <input
+    type="number"
+    class="psd-input psd-input--coord"
+    [readonly]="readonly"
+    [ngModel]="node.y"
+    (ngModelChange)="node.y = $event ? +$event : node.y; nodeChange.emit(node)"
+    placeholder="y"
+  />
+  <input
+    type="number"
+    class="psd-input psd-input--query"
+    [readonly]="readonly"
+    [ngModel]="config[node.id]?.query_id"
+    (ngModelChange)="onQueryIdChange($event)"
+    placeholder="query_id"
+  />
+  <button class="psd-btn" type="button" (click)="onAddChild()" [disabled]="readonly">+ child</button>
+  <button class="psd-btn psd-btn--danger" type="button" (click)="onRemove()" [disabled]="readonly">×</button>
+  </div>
+
+  <div class="psd-block__children" *ngIf="node.children?.length">
+    <op-psd-block-tree
+      *ngFor="let child of node.children"
+      [node]="child"
+      [config]="config"
+      (nodeChange)="nodeChange.emit(node)"
+      (configChange)="configChange.emit($event)"
+      (addChild)="addChild.emit($event)"
+      (remove)="remove.emit($event)"
+      [readonly]="readonly"
+    ></op-psd-block-tree>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+.psd-canvas
+  position: relative
+  min-height: 500px
+  background: linear-gradient(90deg, #f5f7fb 1px, transparent 1px), linear-gradient(180deg, #f5f7fb 1px, transparent 1px)
+  background-size: 40px 40px
+  border: 1px dashed #c3c9d4
+  border-radius: 8px
+  overflow: hidden
+
+.psd-canvas__block
+  position: absolute
+  background: #ffffff
+  border: 1px solid #c3c9d4
+  border-radius: 8px
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06)
+  padding: 8px
+  cursor: move
+  display: flex
+  flex-direction: column
+  gap: 6px
+
+.psd-canvas__title
+  display: flex
+  justify-content: space-between
+  font-weight: 600
+
+.psd-canvas__depth
+  font-size: 12px
+  color: #6b7280
+
+.psd-canvas__counts
+  display: grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+  gap: 4px
+  font-size: 12px
+
+.psd-canvas__resize
+  position: absolute
+  width: 12px
+  height: 12px
+  right: 2px
+  bottom: 2px
+  background: #1d6fde
+  border-radius: 3px
+  cursor: se-resize
