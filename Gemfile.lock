@@ -169,6 +169,11 @@ PATH
       grids
 
 PATH
+  remote: modules/project_structure_dashboard
+  specs:
+    openproject-project_structure_dashboard (0.0.1)
+
+PATH
   remote: modules/recaptcha
   specs:
     openproject-recaptcha (1.0.0)
@@ -1512,7 +1517,6 @@ PLATFORMS
   arm-linux-gnu
   arm-linux-musl
   arm64-darwin
-  ruby
   x86-linux-gnu
   x86-linux-musl
   x86_64-darwin
@@ -1635,6 +1639,7 @@ DEPENDENCIES
   openproject-octicons_helper (~> 19.29.0)
   openproject-openid_connect!
   openproject-primer_view_components (~> 0.75.2)
+  openproject-project_structure_dashboard!
   openproject-recaptcha!
   openproject-reporting!
   openproject-storages!
@@ -2012,6 +2017,7 @@ CHECKSUMS
   openproject-octicons_helper (19.29.0) sha256=d093d91163b27d1624841590a8e6b202186d165ad7d006ceadc8bdc3b09830e6
   openproject-openid_connect (1.0.0)
   openproject-primer_view_components (0.75.2) sha256=7ad3d7eb15a163f67fdde42b41a0e4f08a33bb26d8aeaafd5eaf5e1bf3646915
+  openproject-project_structure_dashboard (0.0.1)
   openproject-recaptcha (1.0.0)
   openproject-reporting (1.0.0)
   openproject-storages (1.0.0)
