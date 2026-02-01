@@ -43,6 +43,7 @@ RUN apt-get install -y openjdk-21-jdk
 COPY ./docker/dev/backend/scripts/setup /usr/sbin/setup
 COPY ./docker/dev/backend/scripts/setup-bim /usr/sbin/setup-bim
 COPY ./docker/dev/backend/scripts/run-app /usr/sbin/run-app
+RUN chmod +x /usr/sbin/run-app && sed -i 's/\r$//' /usr/sbin/run-app
 
 # The following lines are needed to make sure the file permissions are setup correctly after the volumes are mounted
 RUN mkdir -p /home/$USER/openproject/tmp
