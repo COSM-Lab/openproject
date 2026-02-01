@@ -79,6 +79,14 @@ module API
             mount API::V3::Versions::VersionsByProjectAPI
             mount API::V3::Types::TypesByProjectAPI
             mount API::V3::Queries::QueriesByProjectAPI
+            # ProjectStructureDashboards API will be loaded via to_prepare in engine
+            # and mounted dynamically if available
+            begin
+              require_dependency Rails.root.join("modules/project_structure_dashboard/lib/api/v3/project_structure_dashboards/project_structure_dashboards_by_project_api").to_s
+              mount API::V3::ProjectStructureDashboards::ProjectStructureDashboardsByProjectAPI
+            rescue LoadError, NameError
+              # Module not available, skip mounting
+            end
             mount API::V3::Favorites::FavoriteActionsAPI, with: { favorite_object_getter: ->(*) { @project } }
           end
         end
